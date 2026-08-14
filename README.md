@@ -1,9 +1,16 @@
-# Restaurante POS - Módulos
+# Restaurante POS Unificado
 
-Incluye:
-- cocina/index.html
-- caja/index.html
-- administracion/index.html
+Aplicación web en una sola interfaz con:
+- Punto de venta
+- Cocina
+- Caja
+- Inventario
+- Administración
+- Usuarios
 
-Estos módulos son prototipos independientes para GitHub Pages.
-La siguiente etapa es conectarlos al POS principal y compartir pedidos mediante una base de datos en tiempo real.
+## Uso
+Sube la carpeta completa a la raíz de tu repositorio de GitHub Pages.
+El archivo principal es `index.html`.
+
+## Nota
+Esta versión funciona en una sola sesión del navegador. Para sincronización real entre varios teléfonos/tablets se debe conectar a Firebase u otro backend.
