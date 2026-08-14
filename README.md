@@ -1,53 +1,83 @@
-# Restaurante POS + Firebase
+# Restaurante POS — Login, roles y permisos
 
-Esta versión sincroniza en Cloud Firestore:
-- Pedidos enviados desde POS
-- Estados de cocina
-- Cuentas de caja
-- Cobros
-- Métricas de ventas en Administración
+Esta versión agrega:
+- Inicio de sesión con Firebase Authentication (Email/Password)
+- Roles: Administrador, Mesero, Cocina y Caja
+- Menú diferente según el rol
+- Creación de empleados desde la sección Usuarios
+- Activar/desactivar empleados
+- Reglas de Firestore basadas en roles
+- Los pedidos y cobros siguen sincronizados en tiempo real
 
-## 1. Crear proyecto Firebase
-En Firebase Console crea un proyecto y registra una aplicación Web.
+## IMPORTANTE: pasos antes de subirla a GitHub
 
-## 2. Configurar `js/firebase.js`
-Firebase te mostrará un objeto `firebaseConfig`.
-Copia sus valores en `js/firebase.js`.
-
-## 3. Activar autenticación anónima
+### 1. Activar Email/Password
 Firebase Console:
-Authentication > Sign-in method > Anonymous > Enable.
+Authentication → Sign-in method → Email/Password → Activar → Guardar.
 
-La app inicia sesión de forma anónima automáticamente.
+La autenticación anónima ya no es necesaria para esta versión. Puedes dejarla activa durante las pruebas y desactivarla después.
 
-## 4. Crear Firestore
+### 2. Crear el PRIMER administrador
+Esto se hace una sola vez manualmente.
+
 Firebase Console:
-Firestore Database > Create database.
+Authentication → Users/Usuarios → Add user/Agregar usuario
 
-## 5. Publicar reglas
-Copia el contenido de `firestore.rules` en:
-Firestore Database > Rules
-y pulsa Publish.
+Crea un correo y contraseña para el administrador.
 
-Estas reglas permiten leer/escribir pedidos solamente a sesiones autenticadas
-(incluyendo las sesiones anónimas de esta primera versión).
+Después copia el UID de ese usuario.
 
-## 6. Subir a GitHub Pages
-Sube TODO el contenido de esta carpeta a la raíz del repositorio:
-- index.html
-- css/
-- js/
-- firestore.rules (puede quedarse en el repo)
-- README.md
+### 3. Crear el perfil del administrador en Firestore
+Firestore Database → Data/Datos → Start collection/Iniciar colección
 
-## Flujo
-POS -> Firestore -> Cocina -> Caja -> Administración
+Collection ID:
+users
 
-Al abrir la app en dos dispositivos distintos, ambos escuchan la colección `orders`
-y reciben actualizaciones en tiempo real.
+Document ID:
+PEGA_EL_UID_DEL_ADMINISTRADOR
 
-## Importante
-Productos, inventario y usuarios todavía se administran localmente.
-La sincronización Firebase de esta versión está enfocada en pedidos, cocina, cobro y ventas.
-El siguiente paso puede mover productos, inventario y usuarios también a Firestore y añadir
-login real con correo/contraseña y roles.
+Campos:
+name    string   Administrador
+email   string   EL_CORREO_QUE_CREASTE
+role    string   admin
+active  boolean  true
+
+IMPORTANTE: `role` debe ser exactamente `admin` en minúsculas.
+
+### 4. Actualizar las reglas
+Firestore → Rules/Reglas
+
+Reemplaza las reglas actuales por el contenido de `firestore.rules`
+y pulsa Publish/Publicar.
+
+### 5. Subir a GitHub Pages
+Reemplaza los archivos del repositorio por los de esta carpeta.
+
+## Roles
+
+Administrador:
+- POS
+- Cocina
+- Caja
+- Inventario
+- Administración
+- Usuarios
+
+Mesero:
+- POS
+
+Cocina:
+- Cocina
+
+Caja:
+- Caja
+
+## Crear empleados
+Después de iniciar sesión como Administrador:
+Usuarios → completa nombre, correo, contraseña y rol → Crear empleado.
+
+El sistema crea la cuenta en Firebase Authentication y el perfil de rol en Firestore.
+
+## Seguridad
+Las reglas de Firestore comprueban que el usuario esté autenticado, activo y tenga un rol válido.
+Una cuenta de Authentication sin documento en `users` no puede usar la aplicación.
