@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurante POS</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            color: #222;
+        }
+
+        header {
+            height: 70px;
+            background: #1f2937;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .status {
+            font-size: 14px;
+            color: #86efac;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* PANEL PRINCIPAL */
+
+        .main {
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        /* MESAS */
+
+        .tables {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .table {
+            padding: 18px 10px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            background: #22c55e;
+            color: white;
+        }
+
+        .table:hover {
+            transform: scale(1.03);
+        }
+
+        .table.selected {
+            outline: 4px solid #2563eb;
+        }
+
+        .table.occupied {
+            background: #ef4444;
+        }
+
+        /* CATEGORÍAS */
+
+        .categories {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .category {
+            border: none;
+            padding: 10px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            background: #e5e7eb;
+            font-weight: bold;
+        }
+
+        .category.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        /* PRODUCTOS */
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .product {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.08);
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .product:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,.12);
+        }
+
+        .product-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .product-name {
+            font-weight: bold;
+            margin-bottom: 7px;
+        }
+
+        .product-price {
+            color: #2563eb;
+            font-weight: bold;
+        }
+
+        /* PEDIDO */
+
+        .order-panel {
+            background: white;
+            border-left: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .order-header {
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .order-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .selected-table {
+            color: #2563eb;
+            margin-top: 5px;
+        }
+
+        .order-items {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .empty {
+            text-align: center;
+            color: #777;
+            margin-top: 50px;
+        }
+
+        .order-item {
+            border-bottom: 1px solid #eee;
+            padding: 12px 0;
+        }
+
+        .item-top {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+        }
+
+        .item-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .qty-btn {
+            border: none;
+            background: #e5e7eb;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .remove-btn {
+            margin-left: auto;
+            border: none;
+            background: transparent;
+            color: #ef4444;
+            cursor: pointer;
+        }
+
+        /* TOTAL */
+
+        .order-footer {
+            border-top: 1px solid #ddd;
+            padding: 20px;
+        }
+
+        .total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 23px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .action {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+            font-size: 15px;
+        }
+
+        .kitchen {
+            background: #f97316;
+        }
+
+        .pay {
+            background: #16a34a;
+        }
+
+        .clear {
+            background: #6b7280;
+        }
+
+        .action:hover {
+            opacity: .9;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 900px) {
+
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .order-panel {
+                border-left: none;
+                border-top: 1px solid #ddd;
+                min-height: 450px;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            header {
+                padding: 0 15px;
+            }
+
+            .main {
+                padding: 15px;
+            }
+
+            .products {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tables {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">🍽️ Restaurante POS</div>
+    <div class="status">● Sistema conectado</div>
+</header>
+
+<div class="container">
+
+    <main class="main">
+
+        <h2 class="section-title">Seleccionar mesa</h2>
+
+        <div class="tables">
+
+            <button class="table" onclick="selectTable(1)">Mesa 1</button>
+            <button class="table" onclick="selectTable(2)">Mesa 2</button>
+            <button class="table occupied" onclick="selectTable(3)">Mesa 3</button>
+            <button class="table" onclick="selectTable(4)">Mesa 4</button>
+            <button class="table" onclick="selectTable(5)">Mesa 5</button>
+            <button class="table occupied" onclick="selectTable(6)">Mesa 6</button>
+            <button class="table" onclick="selectTable(7)">Mesa 7</button>
+            <button class="table" onclick="selectTable(8)">Mesa 8</button>
+            <button class="table" onclick="selectTable(9)">Mesa 9</button>
+            <button class="table" onclick="selectTable(10)">Mesa 10</button>
+
+        </div>
+
+        <h2 class="section-title">Menú</h2>
+
+        <div class="categories">
+
+            <button class="category active" onclick="filterProducts('todos', this)">
+                Todos
+            </button>
+
+            <button class="category" onclick="filterProducts('hamburguesas', this)">
+                🍔 Hamburguesas
+            </button>
+
+            <button class="category" onclick="filterProducts('tacos', this)">
+                🌮 Tacos
+            </button>
+
+            <button class="category" onclick="filterProducts('bebidas', this)">
+                🥤 Bebidas
+            </button>
+
+            <button class="category" onclick="filterProducts('postres', this)">
+                🍰 Postres
+            </button>
+
+        </div>
+
+        <div class="products" id="products"></div>
+
+    </main>
+
+    <aside class="order-panel">
+
+        <div class="order-header">
+
+            <div class="order-title">
+                🛒 Pedido actual
+            </div>
+
+            <div class="selected-table" id="selectedTable">
+                Selecciona una mesa
+            </div>
+
+        </div>
+
+        <div class="order-items" id="orderItems">
+
+            <div class="empty">
+                No hay productos en el pedido
+            </div>
+
+        </div>
+
+        <div class="order-footer">
+
+            <div class="total">
+                <span>Total</span>
+                <span id="total">$0.00</span>
+            </div>
+
+            <button class="action kitchen" onclick="sendKitchen()">
+                👨‍🍳 Enviar a cocina
+            </button>
+
+            <button class="action pay" onclick="payOrder()">
+                💳 Cobrar
+            </button>
+
+            <button class="action clear" onclick="clearOrder()">
+                🗑️ Vaciar pedido
+            </button>
+
+        </div>
+
+    </aside>
+
+</div>
+
+<script>
+
+    let selectedTable = null;
+    let order = [];
+
+    const products = [
+
+        {
+            id: 1,
+            name: "Hamburguesa Clásica",
+            price: 120,
+            category: "hamburguesas",
+            icon: "🍔"
+        },
+
+        {
+            id: 2,
+            name: "Hamburguesa Especial",
+            price: 150,
+            category: "hamburguesas",
+            icon: "🍔"
+        },
+
+        {
+            id: 3,
+            name: "Hamburguesa Doble",
+            price: 180,
+            category: "hamburguesas",
+            icon: "🍔"
+        },
+
+        {
+            id: 4,
+            name: "Tacos al Pastor",
+            price: 90,
+            category: "tacos",
+            icon: "🌮"
+        },
+
+        {
+            id: 5,
+            name: "Tacos de Bistec",
+            price: 100,
+            category: "tacos",
+            icon: "🌮"
+        },
+
+        {
+            id: 6,
+            name: "Coca-Cola",
+            price: 35,
+            category: "bebidas",
+            icon: "🥤"
+        },
+
+        {
+            id: 7,
+            name: "Agua Natural",
+            price: 25,
+            category: "bebidas",
+            icon: "💧"
+        },
+
+        {
+            id: 8,
+            name: "Pastel de Chocolate",
+            price: 70,
+            category: "postres",
+            icon: "🍰"
+        },
+
+        {
+            id: 9,
+            name: "Cheesecake",
+            price: 75,
+            category: "postres",
+            icon: "🍰"
+        }
+
+    ];
+
+
+    function showProducts(category = "todos") {
+
+        const container = document.getElementById("products");
+
+        container.innerHTML = "";
+
+        const filtered = category === "todos"
+            ? products
+            : products.filter(product => product.category === category);
+
+        filtered.forEach(product => {
+
+            const div = document.createElement("div");
+
+            div.className = "product";
+
+            div.onclick = () => addProduct(product);
+
+            div.innerHTML = `
+
+                <div class="product-icon">
+                    ${product.icon}
+                </div>
+
+                <div class="product-name">
+                    ${product.name}
+                </div>
+
+                <div class="product-price">
+                    $${product.price.toFixed(2)}
+                </div>
+
+            `;
+
+            container.appendChild(div);
+
+        });
+
+    }
+
+
+    function filterProducts(category, button) {
+
+        document
+            .querySelectorAll(".category")
+            .forEach(btn => btn.classList.remove("active"));
+
+        button.classList.add("active");
+
+        showProducts(category);
+
+    }
+
+
+    function selectTable(table) {
+
+        selectedTable = table;
+
+        document.getElementById("selectedTable").textContent =
+            "Mesa " + table;
+
+        document
+            .querySelectorAll(".table")
+            .forEach(btn => btn.classList.remove("selected"));
+
+        event.target.classList.add("selected");
+
+    }
+
+
+    function addProduct(product) {
+
+        if (!selectedTable) {
+
+            alert("Primero selecciona una mesa.");
+
+            return;
+
+        }
+
+        const existing = order.find(item => item.id === product.id);
+
+        if (existing) {
+
+            existing.quantity++;
+
+        } else {
+
+            order.push({
+
+                ...product,
+
+                quantity: 1
+
+            });
+
+        }
+
+        renderOrder();
+
+    }
+
+
+    function changeQuantity(id, amount) {
+
+        const item = order.find(item => item.id === id);
+
+        if (!item) return;
+
+        item.quantity += amount;
+
+        if (item.quantity <= 0) {
+
+            order = order.filter(item => item.id !== id);
+
+        }
+
+        renderOrder();
+
+    }
+
+
+    function removeProduct(id) {
+
+        order = order.filter(item => item.id !== id);
+
+        renderOrder();
+
+    }
+
+
+    function renderOrder() {
+
+        const container = document.getElementById("orderItems");
+
+        container.innerHTML = "";
+
+        if (order.length === 0) {
+
+            container.innerHTML = `
+                <div class="empty">
+                    No hay productos en el pedido
+                </div>
+            `;
+
+            updateTotal();
+
+            return;
+        }
+
+
+        order.forEach(item => {
+
+            const div = document.createElement("div");
+
+            div.className = "order-item";
+
+            div.innerHTML = `
+
+                <div class="item-top">
+
+                    <span>
+                        ${item.name}
+                    </span>
+
+                    <span>
+                        $${(item.price * item.quantity).toFixed(2)}
+                    </span>
+
+                </div>
+
+                <div class="item-controls">
+
+                    <button
+                        class="qty-btn"
+                        onclick="changeQuantity(${item.id}, -1)">
+                        −
+                    </button>
+
+                    <span>
+                        ${item.quantity}
+                    </span>
+
+                    <button
+                        class="qty-btn"
+                        onclick="changeQuantity(${item.id}, 1)">
+                        +
+                    </button>
+
+                    <button
+                        class="remove-btn"
+                        onclick="removeProduct(${item.id})">
+                        Eliminar
+                    </button>
+
+                </div>
+
+            `;
+
+            container.appendChild(div);
+
+        });
+
+        updateTotal();
+
+    }
+
+
+    function updateTotal() {
+
+        const total = order.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0
+        );
+
+        document.getElementById("total").textContent =
+            "$" + total.toFixed(2);
+
+    }
+
+
+    function sendKitchen() {
+
+        if (!selectedTable) {
+
+            alert("Selecciona una mesa.");
+
+            return;
+
+        }
+
+        if (order.length === 0) {
+
+            alert("El pedido está vacío.");
+
+            return;
+
+        }
+
+        alert(
+            "👨‍🍳 Pedido enviado a cocina\n\n" +
+            "Mesa: " + selectedTable
+        );
+
+    }
+
+
+    function payOrder() {
+
+        if (!selectedTable || order.length === 0) {
+
+            alert("No hay una cuenta para cobrar.");
+
+            return;
+
+        }
+
+        const total = document.getElementById("total").textContent;
+
+        alert(
+            "💳 Cuenta de Mesa " +
+            selectedTable +
+            "\n\nTotal: " +
+            total
+        );
+
+    }
+
+
+    function clearOrder() {
+
+        if (order.length === 0) return;
+
+        if (confirm("¿Deseas vaciar el pedido?")) {
+
+            order = [];
+
+            renderOrder();
+
+        }
+
+    }
+
+
+    showProducts();
+
+</script>
+
+</body>
+</html>
